@@ -14,3 +14,5 @@ Jump to the test file according to the following rules.
   - e.g. `src/foo/bar.ts` jumps to `__test__/foo/bar.test.ts`.
 
 If a test file was opened, do the reverse.
+
+![movie](https://user-images.githubusercontent.com/13149507/147128991-48006ad3-75e5-4f3d-88a7-217bd7e9a17b.gif)
