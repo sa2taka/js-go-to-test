@@ -1,5 +1,6 @@
 {
   "name": "js-go-to-test",
+  "publisher": "sa2taka",
   "displayName": "JS go to test",
   "description": "Jump between and test in JavaScript/TypeScript project.",
   "version": "0.0.1",
