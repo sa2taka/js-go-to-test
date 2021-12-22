@@ -3,7 +3,7 @@
   "publisher": "sa2taka",
   "displayName": "JS go to test",
   "description": "Jump between and test in JavaScript/TypeScript project.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.63.0"
   },
