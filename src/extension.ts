@@ -1,28 +1,58 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+import path = require('path');
 import * as vscode from 'vscode';
+import { FileIsNotJavaScriptError } from './error';
+import { jumpTo } from './explorer';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+const openFile = (fileName: string) => {
+  vscode.workspace
+    .openTextDocument(fileName)
+    .then(vscode.window.showTextDocument);
+};
+
+const escapeRegExp = (str: string): string => {
+  const reRegExp = /[\\^$.*+?()[\]{}|]/g;
+
+  return str.replace(reRegExp, '\\$&');
+};
+
 export function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log('Congratulations, your extension "js-go-to-test" is now active!');
-
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
-  let disposable = vscode.commands.registerCommand(
-    'js-go-to-test.helloWorld',
+  const disposable = vscode.commands.registerCommand(
+    'js-go-to-test.jump',
     () => {
-      // The code you place here will be executed every time your command is executed
-      // Display a message box to the user
-      vscode.window.showInformationMessage('Hello World from JS go to test!');
+      var editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        return;
+      }
+
+      const document = editor.document;
+      const relativePath = vscode.workspace.asRelativePath(document.fileName);
+      const workspacePath = document.fileName.replace(
+        new RegExp(`${escapeRegExp(relativePath)}$`),
+        ''
+      );
+
+      try {
+        const related = jumpTo(relativePath, workspacePath);
+        if (!related) {
+          vscode.window.showInformationMessage(
+            'jump destination is not found.'
+          );
+          return;
+        }
+        openFile(related);
+      } catch (e) {
+        if (e instanceof FileIsNotJavaScriptError) {
+          vscode.window.showInformationMessage(
+            'the file is not javascript/typescript.'
+          );
+        } else {
+          vscode.window.showInformationMessage('some error is occurred.');
+        }
+      }
     }
   );
 
   context.subscriptions.push(disposable);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() {}
