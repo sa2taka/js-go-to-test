@@ -14,6 +14,10 @@
     "onCommand:js-go-to-test.jump"
   ],
   "main": "./out/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sa2taka/js-go-to-test"
+  },
   "contributes": {
     "commands": [
       {
