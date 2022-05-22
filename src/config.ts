@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export const getTetsRoots = (): string[] => {
+export const getTestsRoots = (): string[] => {
   return vscode.workspace
     .getConfiguration('jsGoToTest')
     .get('testSourceRoots')!;

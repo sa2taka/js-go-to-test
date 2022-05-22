@@ -1,4 +1,4 @@
-abstract class CustomErrorBase extends Error {
+export abstract class CustomErrorBase extends Error {
   constructor(message?: string) {
     super(message);
     const target = new.target;

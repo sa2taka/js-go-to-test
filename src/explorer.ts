@@ -1,25 +1,27 @@
-import { existsSync } from 'fs';
+import { existsSync, readdirSync, statSync } from 'fs';
 import path = require('path');
 import {
   getExtensions,
   getRoot,
   getTestFileSuffix,
-  getTetsRoots,
+  getTestsRoots,
 } from './config';
-import { FileIsNotJavaScriptError } from './error';
+import { FileIsNotJavaScriptError, CustomErrorBase } from './error';
+
+class DirectoryIsNotFound extends CustomErrorBase {}
 
 export const jumpTo = (
-  relativeFilePath: string,
+  filepath: string,
   workSpacePath: string
 ): string | undefined => {
-  if (!isJs(relativeFilePath)) {
-    throw new FileIsNotJavaScriptError(relativeFilePath);
+  if (!isJs(filepath)) {
+    throw new FileIsNotJavaScriptError(filepath);
   }
 
-  if (isTest(relativeFilePath)) {
-    return testToCode(relativeFilePath, workSpacePath);
+  if (isTest(filepath)) {
+    return testToCode(filepath, workSpacePath);
   } else {
-    return codeToTest(relativeFilePath, workSpacePath);
+    return codeToTest(filepath, workSpacePath);
   }
 };
 
@@ -34,7 +36,7 @@ export const isTest = (file: string): boolean => {
     return true;
   }
 
-  return getTetsRoots().some((testRoot) => file.startsWith(testRoot));
+  return isInTest(file);
 };
 
 export const isJs = (file: string) => {
@@ -43,79 +45,99 @@ export const isJs = (file: string) => {
 };
 
 const codeToTest = (
-  relativeFilePath: string,
+  filepath: string,
   workSpacePath: string
 ): string | undefined => {
   const testSuffix = getTestFileSuffix();
-  const parsed = path.parse(relativeFilePath);
+  const parsed = path.parse(filepath);
   const testFileName = `${parsed.name}${testSuffix}${parsed.ext}`;
 
   // explorer same folder
-  if (existsSync(path.join(workSpacePath, parsed.dir, testFileName))) {
-    return path.join(workSpacePath, parsed.dir, testFileName);
+  if (existsSync(path.join(parsed.dir, testFileName))) {
+    return path.join(parsed.dir, testFileName);
   }
 
   // explorer test folder
-  const keyPath = parsed.dir.replace(new RegExp(`${getRoot()}/?`), '');
-  const tests = getTetsRoots()
-    .map((testRoot) => {
-      const testKeyPath = path.join(workSpacePath, testRoot, keyPath);
-      const testIncludeRootPath = path.join(
-        workSpacePath,
-        testRoot,
-        parsed.dir
-      );
+  try {
+    const baseRoot = findNearestDirectoryHasTestRoot(filepath, workSpacePath);
+    const keyPath = path.dirname(
+      minusPath(filepath, baseRoot).replace(
+        new RegExp(`^${getRoot()}${path.sep}?`),
+        ''
+      )
+    );
 
-      if (existsSync(path.join(testKeyPath, testFileName))) {
-        return path.join(testKeyPath, testFileName);
-      }
-      if (existsSync(path.join(testKeyPath, parsed.name))) {
-        return path.join(testKeyPath, parsed.name);
-      }
-      if (existsSync(path.join(testIncludeRootPath, testFileName))) {
-        return path.join(testIncludeRootPath, testFileName);
-      }
+    const tests = getTestsRoots()
+      .map((testRoot) => {
+        const testKeyPath = path.join(baseRoot, testRoot, keyPath);
+        const testIncludeRootPath = path.join(
+          baseRoot,
+          testRoot,
+          getRoot(),
+          keyPath
+        );
 
-      if (existsSync(path.join(testIncludeRootPath, parsed.name))) {
-        return path.join(testIncludeRootPath, parsed.name);
-      }
+        // foo/bar/src/foobar.ts → foo/bar/__tests__/foobar.test.ts
+        if (existsSync(path.join(testKeyPath, testFileName))) {
+          return path.join(testKeyPath, testFileName);
+        }
+        // foo/bar/src/foobar.ts → foo/bar/__tests__/foobar.ts
+        if (existsSync(path.join(testKeyPath, parsed.name))) {
+          return path.join(testKeyPath, parsed.name);
+        }
+
+        // foo/bar/src/foobar.ts → foo/bar/__tests__/src/foobar.test.ts
+        if (existsSync(path.join(testIncludeRootPath, testFileName))) {
+          return path.join(testIncludeRootPath, testFileName);
+        }
+        // foo/bar/src/foobar.ts → foo/bar/__tests__/src/foobar.ts
+        if (existsSync(path.join(testIncludeRootPath, parsed.name))) {
+          return path.join(testIncludeRootPath, parsed.name);
+        }
+
+        return undefined;
+      })
+      .filter((file): file is string => !!file);
+
+    return tests.length > 0 ? tests[0] : undefined;
+  } catch (err) {
+    if (err instanceof DirectoryIsNotFound) {
       return undefined;
-    })
-    .filter((file): file is string => !!file);
-
-  if (tests.length <= 0) {
-    return undefined;
+    }
   }
-
-  return tests[0];
 };
 
 const testToCode = (
-  relativeFilePath: string,
+  filepath: string,
   workSpacePath: string
 ): string | undefined => {
   const testSuffix = getTestFileSuffix();
-  const parsed = path.parse(relativeFilePath);
+  const parsed = path.parse(filepath);
   const removeTestFileName = `${parsed.name.replace(
     new RegExp(`${testSuffix}$`),
     ''
   )}${parsed.ext}`;
 
-  // if file is in test folder
-  if (
-    getTetsRoots().some((testRoot) => relativeFilePath.startsWith(testRoot))
-  ) {
-    const testRootPath = getTetsRoots().filter((testRoot) =>
-      relativeFilePath.startsWith(testRoot)
-    )[0];
-    const keyPath = parsed.dir.replace(new RegExp(`${testRootPath}/?`), '');
-    const appendSrcRootPath = path.join(workSpacePath, getRoot(), keyPath);
+  if (isInTest(filepath)) {
+    const baseRoot = findNearestDirectoryHasTestRoot(filepath);
+    const keyPath = path.dirname(
+      minusPath(filepath, baseRoot).replace(
+        new RegExp(`^(${getTestsRoots().join('|')})${path.sep}?`),
+        ''
+      )
+    );
+    const appendSrcRootPath = path.join(getRoot(), keyPath);
 
-    if (existsSync(path.join(appendSrcRootPath, removeTestFileName))) {
-      return path.join(appendSrcRootPath, removeTestFileName);
+    // foo/bar/__tests__/foobar.test.ts → foo/bar/src/foobar.ts
+    if (
+      existsSync(path.join(baseRoot, appendSrcRootPath, removeTestFileName))
+    ) {
+      return path.join(baseRoot, appendSrcRootPath, removeTestFileName);
     }
-    if (existsSync(path.join(workSpacePath, keyPath, removeTestFileName))) {
-      return path.join(workSpacePath, keyPath, removeTestFileName);
+
+    // foo/bar/__tests__/foobar.test.ts → foo/bar/foobar.ts
+    if (existsSync(path.join(baseRoot, keyPath, removeTestFileName))) {
+      return path.join(baseRoot, keyPath, removeTestFileName);
     }
   }
 
@@ -125,4 +147,97 @@ const testToCode = (
   }
 
   return undefined;
+};
+
+const isInTest = (filepath: string): boolean => {
+  const testRoots = getTestsRoots();
+  const sep = path.sep;
+  return testRoots.some((testRoot) => {
+    const regexp = new RegExp(`[${sep}^]${testRoot}[${sep}$]`);
+    return regexp.test(filepath);
+  });
+};
+
+const minusPath = (target: string, amount: string): string => {
+  const targetElements = target.split(path.sep);
+  const amountElements = amount.split(path.sep);
+
+  const matchingIndex = targetElements.findIndex((element, index) => {
+    const amountElement = amountElements[index];
+    return element !== amountElement;
+  });
+  return path.join(
+    ...targetElements.splice(
+      matchingIndex,
+      targetElements.length - matchingIndex
+    )
+  );
+};
+
+const findNearestDirectoryHasTestRoot = (
+  currentDirectory: string,
+  limitDirectory?: string
+): string => {
+  const root = path.parse(currentDirectory).root;
+  let workingDirectory = currentDirectory;
+
+  while (true) {
+    if (hasTestDirectory(workingDirectory)) {
+      return workingDirectory;
+    }
+    if (limitDirectory && equalsPath(workingDirectory, limitDirectory)) {
+      throw new DirectoryIsNotFound();
+    }
+    if (equalsPath(workingDirectory, root)) {
+      throw new DirectoryIsNotFound();
+    }
+    workingDirectory = path.dirname(workingDirectory);
+  }
+};
+
+const hasTestDirectory = (currentDirectory: string): boolean => {
+  const status = statSync(currentDirectory);
+  if (status.isFile()) {
+    return false;
+  }
+
+  const testRoots = getTestsRoots();
+
+  const files = readdirSync(currentDirectory);
+  return files.some((file) => {
+    if (!testRoots.includes(file)) {
+      return false;
+    }
+    const status = statSync(path.join(currentDirectory, file));
+    return status.isDirectory();
+  });
+};
+
+const hasSrcDirectory = (currentDirectory: string): boolean => {
+  const status = statSync(currentDirectory);
+  if (status.isFile()) {
+    return false;
+  }
+
+  const root = getRoot();
+
+  const files = readdirSync(currentDirectory);
+  return files.some((file) => {
+    if (file !== root) {
+      return false;
+    }
+    const status = statSync(path.join(currentDirectory, file));
+    return status.isDirectory();
+  });
+};
+
+const equalsPath = (path1: string, path2: string): boolean => {
+  const normalizedPath1 = path.resolve(path1);
+  const normalizedPath2 = path.resolve(path2);
+
+  if (process.platform === 'win32') {
+    return path1.toLowerCase() === path2.toLowerCase();
+  }
+
+  return path1 === path2;
 };

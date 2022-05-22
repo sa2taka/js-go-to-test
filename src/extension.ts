@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
       );
 
       try {
-        const related = jumpTo(relativePath, workspacePath);
+        const related = jumpTo(document.fileName, workspacePath);
         if (!related) {
           vscode.window.showInformationMessage(
             'jump destination is not found.'
