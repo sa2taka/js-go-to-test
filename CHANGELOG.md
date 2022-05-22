@@ -4,9 +4,14 @@ All notable changes to the "js-go-to-test" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+
+## [0.1.0]
+
+- Fix to work properly under monorepo or/and multiple workspaces.
+
 ## [0.0.2]
 
-- fix document
+- Fix document
 
 ## [0.0.1]
 
