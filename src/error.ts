@@ -1,19 +1,19 @@
-class SuperError extends Error {
-  constructor(text: string, errorConstructor: Function) {
-    super(text);
-    this.name = 'NonExistVirtualBillError';
+abstract class CustomErrorBase extends Error {
+  constructor(message?: string) {
+    super(message);
+    const target = new.target;
+
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, errorConstructor);
+      Error.captureStackTrace(this, this.constructor);
     }
-    Object.setPrototypeOf(this, errorConstructor.prototype);
+
+    Object.setPrototypeOf(this, target.prototype);
+    this.name = target.name;
   }
 }
 
-export class FileIsNotJavaScriptError extends SuperError {
+export class FileIsNotJavaScriptError extends CustomErrorBase {
   constructor(file: string) {
-    super(
-      `The file is not javascript/typescript. file: ${file}`,
-      FileIsNotJavaScriptError
-    );
+    super(`The file is not javascript/typescript. file: ${file}`);
   }
 }
