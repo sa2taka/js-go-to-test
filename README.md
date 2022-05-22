@@ -1,6 +1,6 @@
 # JS Go To Test
 
-Jump between and test in JavaScript/TypeScript project.
+Jump between code and test in JavaScript/TypeScript project.
 
 ## Usage 
 
