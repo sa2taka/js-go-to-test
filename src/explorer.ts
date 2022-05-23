@@ -61,7 +61,7 @@ const codeToTest = (
   try {
     const baseRoot = findNearestDirectoryHasTestRoot(filepath, workSpacePath);
     const keyPath = path.dirname(
-      minusPath(filepath, baseRoot).replace(
+      shavePathFromStart(filepath, baseRoot).replace(
         new RegExp(`^${getRoot()}${path.sep}?`),
         ''
       )
@@ -121,7 +121,7 @@ const testToCode = (
   if (isInTest(filepath)) {
     const baseRoot = findNearestDirectoryHasTestRoot(filepath);
     const keyPath = path.dirname(
-      minusPath(filepath, baseRoot).replace(
+      shavePathFromStart(filepath, baseRoot).replace(
         new RegExp(`^(${getTestsRoots().join('|')})${path.sep}?`),
         ''
       )
@@ -158,9 +158,9 @@ const isInTest = (filepath: string): boolean => {
   });
 };
 
-const minusPath = (target: string, amount: string): string => {
+const shavePathFromStart = (target: string, shaverPath: string): string => {
   const targetElements = target.split(path.sep);
-  const amountElements = amount.split(path.sep);
+  const amountElements = shaverPath.split(path.sep);
 
   const matchingIndex = targetElements.findIndex((element, index) => {
     const amountElement = amountElements[index];
