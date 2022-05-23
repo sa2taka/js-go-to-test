@@ -160,10 +160,10 @@ const isInTest = (filepath: string): boolean => {
 
 const shavePathFromStart = (target: string, shaverPath: string): string => {
   const targetElements = target.split(path.sep);
-  const amountElements = shaverPath.split(path.sep);
+  const shaverElements = shaverPath.split(path.sep);
 
   const matchingIndex = targetElements.findIndex((element, index) => {
-    const amountElement = amountElements[index];
+    const amountElement = shaverElements[index];
     return element !== amountElement;
   });
   return path.join(
