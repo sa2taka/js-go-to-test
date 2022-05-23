@@ -236,7 +236,7 @@ const equalsPath = (path1: string, path2: string): boolean => {
   const normalizedPath2 = path.resolve(path2);
 
   if (process.platform === 'win32') {
-    return path1.toLowerCase() === path2.toLowerCase();
+    return normalizedPath1.toLowerCase() === normalizedPath2.toLowerCase();
   }
 
   return path1 === path2;
