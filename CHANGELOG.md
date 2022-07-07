@@ -8,6 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - ✨ Add to create the test file if the test file is not found.
   - Currently only support to create file in the test folders.(e.g. `__tests__/foo/bar/index.test.ts`)
+- Update libraries.
 
 ## [0.1.2]
 
