@@ -17,3 +17,7 @@ export const getTestFileSuffix = (): string => {
 export const getExtensions = (): string[] => {
   return ['ts', 'js', 'tsx', 'jsx', 'mts', 'mjs', 'cts', 'cjs'];
 };
+
+export const getIgnorePaths = (): string[] => {
+  return ['node_modules'];
+};

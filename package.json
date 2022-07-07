@@ -74,7 +74,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.1",
-    "@types/glob": "^7.1.4",
+    "@types/glob": "^7.2.0",
     "@types/mocha": "^9.1.1",
     "@types/node": "14.x",
     "@types/rewire": "^2.5.28",
@@ -85,11 +85,15 @@
     "chai": "^4.3.6",
     "eslint": "^8.1.0",
     "eslint-config-prettier": "^8.3.0",
-    "glob": "^7.1.7",
+    "glob": "^8.0.3",
     "mocha": "^10.0.0",
     "prettier": "^2.5.1",
     "rewire": "^6.0.0",
     "ts-node": "^10.8.0",
     "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "@types/mkdirp": "^1.0.2",
+    "mkdirp": "^1.0.4"
   }
 }
