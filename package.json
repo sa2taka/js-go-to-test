@@ -3,7 +3,7 @@
   "publisher": "sa2taka",
   "displayName": "JS go to test",
   "description": "Jump between code and test in JavaScript/TypeScript project.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "engines": {
     "vscode": "^1.63.0"
   },
@@ -85,7 +85,6 @@
     "chai": "^4.3.6",
     "eslint": "^8.1.0",
     "eslint-config-prettier": "^8.3.0",
-    "glob": "^8.0.3",
     "mocha": "^10.0.0",
     "prettier": "^2.5.1",
     "rewire": "^6.0.0",
@@ -94,6 +93,7 @@
   },
   "dependencies": {
     "@types/mkdirp": "^1.0.2",
-    "mkdirp": "^1.0.4"
+    "mkdirp": "^1.0.4",
+    "glob": "^8.0.3"
   }
 }
