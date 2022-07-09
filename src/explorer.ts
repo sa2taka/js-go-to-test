@@ -1,23 +1,9 @@
 import { existsSync, readdirSync, statSync } from 'fs';
+import { getExtensions, getRoot, getTestFileSuffix, getTestsRoots } from './config';
+import { FileIsNotJavaScriptError, FileIsTestError, TestDirectoryIsNotFound } from './error';
 import path = require('path');
-import {
-  getExtensions,
-  getIgnorePaths,
-  getRoot,
-  getTestFileSuffix,
-  getTestsRoots,
-} from './config';
-import {
-  FileIsNotJavaScriptError,
-  FileIsTestError,
-  TestDirectoryIsNotFound,
-} from './error';
-import { glob } from 'glob';
 
-export const jumpTo = (
-  filepath: string,
-  workSpacePath: string
-): string | undefined => {
+export const jumpTo = (filepath: string, workSpacePath: string): string | undefined => {
   if (!isJs(filepath)) {
     throw new FileIsNotJavaScriptError(filepath);
   }
@@ -29,10 +15,7 @@ export const jumpTo = (
   }
 };
 
-export const suggestingTestPaths = (
-  originalFilePath: string,
-  workSpacePath: string
-): { absolutePath: string; relativePath: string }[] => {
+export const suggestingTestPaths = (originalFilePath: string, workSpacePath: string): { absolutePath: string; relativePath: string }[] => {
   if (!isJs(originalFilePath)) {
     throw new FileIsNotJavaScriptError(originalFilePath);
   }
@@ -40,10 +23,7 @@ export const suggestingTestPaths = (
   if (isTest(originalFilePath)) {
     throw new FileIsTestError(originalFilePath);
   } else {
-    const inTestRootPath = getSuggestionTestPathInTestRoot(
-      originalFilePath,
-      workSpacePath
-    );
+    const inTestRootPath = getSuggestionTestPathInTestRoot(originalFilePath, workSpacePath);
 
     return [inTestRootPath]
       .filter((v): v is string => Boolean(v))
@@ -73,10 +53,7 @@ export const isJs = (file: string) => {
   return getExtensions().includes(extension);
 };
 
-const codeToTest = (
-  filepath: string,
-  workSpacePath: string
-): string | undefined => {
+const codeToTest = (filepath: string, workSpacePath: string): string | undefined => {
   const testSuffix = getTestFileSuffix();
   const parsed = path.parse(filepath);
   const testFileName = `${parsed.name}${testSuffix}${parsed.ext}`;
@@ -88,42 +65,28 @@ const codeToTest = (
 
   // explorer test folder
   try {
-    const { directory: baseRoot, testRoot } = findNearestDirectoryHasTestRoot(
-      filepath,
-      workSpacePath
-    );
-    const keyPath = path.dirname(
-      shavePathFromStart(filepath, baseRoot).replace(
-        new RegExp(`^${getRoot()}${path.sep}?`),
-        ''
-      )
-    );
+    const { directory: baseRoot, testRoot } = findNearestDirectoryHasTestRoot(filepath, workSpacePath);
+    const keyPath = path.dirname(shavePathFromStart(filepath, baseRoot).replace(new RegExp(`^${getRoot()}${path.sep}?`), ''));
 
     const testKeyPath = path.join(baseRoot, testRoot, keyPath);
-    const testIncludeRootPath = path.join(
-      baseRoot,
-      testRoot,
-      getRoot(),
-      keyPath
-    );
+    const testIncludeRootPath = path.join(baseRoot, testRoot, getRoot(), keyPath);
 
     // foo/bar/src/foobar.ts → foo/bar/__tests__/foobar.test.ts
     if (existsSync(path.join(testKeyPath, testFileName))) {
       return path.join(testKeyPath, testFileName);
     }
     // foo/bar/src/foobar.ts → foo/bar/__tests__/foobar.ts
-    if (existsSync(path.join(testKeyPath, parsed.name))) {
-      return path.join(testKeyPath, parsed.name);
+    if (existsSync(path.join(testKeyPath, parsed.base))) {
+      return path.join(testKeyPath, parsed.base);
     }
 
     // foo/bar/src/foobar.ts → foo/bar/__tests__/src/foobar.test.ts
     if (existsSync(path.join(testIncludeRootPath, testFileName))) {
       return path.join(testIncludeRootPath, testFileName);
     }
-
     // foo/bar/src/foobar.ts → foo/bar/__tests__/src/foobar.ts
-    if (existsSync(path.join(testIncludeRootPath, parsed.name))) {
-      return path.join(testIncludeRootPath, parsed.name);
+    if (existsSync(path.join(testIncludeRootPath, parsed.base))) {
+      return path.join(testIncludeRootPath, parsed.base);
     }
 
     return undefined;
@@ -134,31 +97,20 @@ const codeToTest = (
   }
 };
 
-const testToCode = (
-  filepath: string,
-  workSpacePath: string
-): string | undefined => {
+const testToCode = (filepath: string, workSpacePath: string): string | undefined => {
   const testSuffix = getTestFileSuffix();
   const parsed = path.parse(filepath);
-  const removeTestFileName = `${parsed.name.replace(
-    new RegExp(`${testSuffix}$`),
-    ''
-  )}${parsed.ext}`;
+  const removeTestFileName = `${parsed.name.replace(new RegExp(`${testSuffix}$`), '')}${parsed.ext}`;
 
   if (isInTest(filepath)) {
     const { directory: baseRoot } = findNearestDirectoryHasTestRoot(filepath);
     const keyPath = path.dirname(
-      shavePathFromStart(filepath, baseRoot).replace(
-        new RegExp(`^(${getTestsRoots().join('|')})${path.sep}?`),
-        ''
-      )
+      shavePathFromStart(filepath, baseRoot).replace(new RegExp(`^(${getTestsRoots().join('|')})${path.sep}?`), '')
     );
     const appendSrcRootPath = path.join(getRoot(), keyPath);
 
     // foo/bar/__tests__/foobar.test.ts → foo/bar/src/foobar.ts
-    if (
-      existsSync(path.join(baseRoot, appendSrcRootPath, removeTestFileName))
-    ) {
+    if (existsSync(path.join(baseRoot, appendSrcRootPath, removeTestFileName))) {
       return path.join(baseRoot, appendSrcRootPath, removeTestFileName);
     }
 
@@ -169,28 +121,17 @@ const testToCode = (
   }
 
   // explorer same folder
-  if (existsSync(path.join(workSpacePath, parsed.dir, removeTestFileName))) {
-    return path.join(workSpacePath, parsed.dir, removeTestFileName);
+  if (existsSync(path.join(parsed.dir, removeTestFileName))) {
+    return path.join(parsed.dir, removeTestFileName);
   }
 
   return undefined;
 };
 
-const getSuggestionTestPathInTestRoot = (
-  originalFilePath: string,
-  workSpacePath: string
-): string | null => {
+const getSuggestionTestPathInTestRoot = (originalFilePath: string, workSpacePath: string): string | null => {
   try {
-    const { directory: baseRoot, testRoot } = findNearestDirectoryHasTestRoot(
-      originalFilePath,
-      workSpacePath
-    );
-    const keyPath = path.dirname(
-      shavePathFromStart(originalFilePath, baseRoot).replace(
-        new RegExp(`^${getRoot()}${path.sep}?`),
-        ''
-      )
-    );
+    const { directory: baseRoot, testRoot } = findNearestDirectoryHasTestRoot(originalFilePath, workSpacePath);
+    const keyPath = path.dirname(shavePathFromStart(originalFilePath, baseRoot).replace(new RegExp(`^${getRoot()}${path.sep}?`), ''));
     const testKeyPath = path.join(baseRoot, testRoot);
     const testIncludeRootPath = path.join(baseRoot, testRoot, getRoot());
     const testSuffix = getTestFileSuffix();
@@ -205,17 +146,6 @@ const getSuggestionTestPathInTestRoot = (
   } catch (e) {
     return null;
   }
-};
-
-const getSuggestionTestPathInSameFolder = (
-  originalFilePath: string,
-  workSpacePath: string
-): string | null => {
-  const testSuffix = getTestFileSuffix();
-  const parsed = path.parse(originalFilePath);
-  const testFileName = `${parsed.name}${testSuffix}${parsed.ext}`;
-
-  return path.join(parsed.dir, testFileName);
 };
 
 const isInTest = (filepath: string): boolean => {
@@ -235,18 +165,10 @@ const shavePathFromStart = (target: string, shaverPath: string): string => {
     const amountElement = shaverElements[index];
     return element !== amountElement;
   });
-  return path.join(
-    ...targetElements.splice(
-      matchingIndex,
-      targetElements.length - matchingIndex
-    )
-  );
+  return path.join(...targetElements.splice(matchingIndex, targetElements.length - matchingIndex));
 };
 
-const findNearestDirectoryHasTestRoot = (
-  currentDirectory: string,
-  limitDirectory?: string
-): { directory: string; testRoot: string } => {
+const findNearestDirectoryHasTestRoot = (currentDirectory: string, limitDirectory?: string): { directory: string; testRoot: string } => {
   const root = path.parse(currentDirectory).root;
   let workingDirectory = currentDirectory;
 
@@ -283,59 +205,6 @@ const findTestDirectory = (currentDirectory: string): string | null => {
     return status.isDirectory() ? testRoot : null;
   });
   return filtered.length > 0 ? filtered[0] : null;
-};
-
-const findSrcDirectory = (currentDirectory: string): string | null => {
-  const status = statSync(currentDirectory);
-  if (status.isFile()) {
-    return null;
-  }
-
-  const root = getRoot();
-
-  const files = readdirSync(currentDirectory);
-  const filtered = files.map((file) => {
-    if (file !== root) {
-      return null;
-    }
-    const status = statSync(path.join(currentDirectory, file));
-    return status.isDirectory() ? root : null;
-  });
-  return filtered.length > 0 ? filtered[0] : null;
-};
-
-const countTestFileNoInTestFolder = (rootFolder: string) => {
-  const testFileSuffix = getTestFileSuffix();
-  const testGlobPattern = `**/*${testFileSuffix}.*`;
-
-  const testFiles = glob.sync(testGlobPattern, {
-    cwd: rootFolder,
-  });
-  const ignorePaths = getIgnorePaths();
-  const extensions = getExtensions();
-  const testRoots = getTestsRoots();
-  const notInTestFolderFiles = testFiles.filter((testFile) => {
-    const parsed = path.parse(testFile);
-    const paths = parsed.dir.split(path.sep);
-    if (ignorePaths.some((ignorePath) => paths.includes(ignorePath))) {
-      return false;
-    }
-
-    if (!extensions.includes(parsed.ext.replace(/^\./, ''))) {
-      return false;
-    }
-
-    if (!parsed.name.match(new RegExp(`${testFileSuffix}$`))) {
-      return false;
-    }
-
-    if (testRoots.some((testRoot) => paths.includes(testRoot))) {
-      return false;
-    }
-    return true;
-  });
-
-  return notInTestFolderFiles.length;
 };
 
 const equalsPath = (path1: string, path2: string): boolean => {

@@ -1,9 +1,7 @@
 import * as vscode from 'vscode';
 
 export const getTestsRoots = (): string[] => {
-  return vscode.workspace
-    .getConfiguration('jsGoToTest')
-    .get('testSourceRoots')!;
+  return vscode.workspace.getConfiguration('jsGoToTest').get('testSourceRoots')!;
 };
 
 export const getRoot = (): string => {

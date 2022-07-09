@@ -65,15 +65,16 @@
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "yarn run compile && yarn run lint",
+    "compile": "tsc -p tsconfig.build.json",
+    "watch": "tsc -watch -p tsconfig.build.json",
     "lint": "eslint src --ext ts",
     "test": "jest"
   },
   "devDependencies": {
     "@types/glob": "^7.2.0",
     "@types/jest": "^28.1.4",
+    "@types/lodash": "^4.14.182",
+    "@types/mkdirp": "^1.0.2",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "14.x",
     "@types/rewire": "^2.5.28",
@@ -93,8 +94,8 @@
     "typescript": "^4.4.4"
   },
   "dependencies": {
-    "@types/mkdirp": "^1.0.2",
     "glob": "^8.0.3",
+    "lodash": "^4.17.21",
     "mkdirp": "^1.0.4"
   }
 }
