@@ -4,6 +4,10 @@ All notable changes to the "js-go-to-test" extension will be documented in this 
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.3]
+
+- Fixed unnecessary files being published.
+
 ## [0.2.2]
 
 - Enhanced to detect code to test/test to code.
