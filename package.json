@@ -11,6 +11,10 @@
     "Other"
   ],
   "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
     "onCommand:js-teleporter.teleport-test",
     "onCommand:js-teleporter.teleport-story"
   ],
