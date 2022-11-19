@@ -4,7 +4,7 @@ import { FileIsNotJavaScriptError } from './error';
 import * as mkdirp from 'mkdirp';
 import * as fs from 'fs';
 import { JsTeleporter } from './js-teleporter';
-import { getExtensions, getRoot, getTestFileSuffix, getTestsRoots } from './config';
+import { getExtensions, getRoot, getStoryFileSuffix, getStoryRoots, getTestFileSuffix, getTestsRoots } from './config';
 
 const openFile = (fileName: string) => {
   vscode.workspace.openTextDocument(fileName).then(vscode.window.showTextDocument);
@@ -41,7 +41,7 @@ const suggestToCreateTest = async (document: vscode.TextDocument, workspacePath:
     })
     .concat([{ label: 'No', absolutePath: 'No' }]);
   const item = await vscode.window.showQuickPick<PickItem>(quickPickItems, {
-    placeHolder: `The test file is not found. Create test file?`,
+    placeHolder: `The ${teleporter.otherworldName} file is not found. Create ${teleporter.otherworldName} file?`,
   });
   if (!item || item.absolutePath === 'No') {
     return;
@@ -56,8 +56,38 @@ const escapeRegExp = (str: string): string => {
   return str.replace(reRegExp, '\\$&');
 };
 
+const jump = async (teleporter: JsTeleporter) => {
+  var editor = vscode.window.activeTextEditor;
+  if (!editor) {
+    return;
+  }
+
+  const document = editor.document;
+  const relativePath = vscode.workspace.asRelativePath(document.fileName);
+  const workspacePath = document.fileName.replace(new RegExp(`${escapeRegExp(relativePath)}$`), '');
+
+  try {
+    const destination = teleporter.jumpTo(document.fileName, workspacePath);
+    if (!destination) {
+      if (teleporter.isOtherworldFile(document.fileName)) {
+        vscode.window.showInformationMessage('jump destination is not found.');
+        return;
+      }
+      await suggestToCreateTest(document, workspacePath, teleporter);
+      return;
+    }
+    openFile(destination);
+  } catch (e) {
+    if (e instanceof FileIsNotJavaScriptError) {
+      vscode.window.showInformationMessage('the file is not javascript/typescript.');
+    } else {
+      vscode.window.showInformationMessage('some error is occurred.');
+    }
+  }
+};
+
 export function activate(context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('js-teleporter.jump', async () => {
+  const disposableTestTeleporter = vscode.commands.registerCommand('js-teleporter.jump-test', async () => {
     const teleporter = new JsTeleporter({
       extensions: getExtensions(),
       srcRoot: getRoot(),
@@ -65,36 +95,22 @@ export function activate(context: vscode.ExtensionContext) {
       otherworldFileSuffix: getTestFileSuffix(),
       otherworldFilesRoots: getTestsRoots(),
     });
-    var editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      return;
-    }
-
-    const document = editor.document;
-    const relativePath = vscode.workspace.asRelativePath(document.fileName);
-    const workspacePath = document.fileName.replace(new RegExp(`${escapeRegExp(relativePath)}$`), '');
-
-    try {
-      const destination = teleporter.jumpTo(document.fileName, workspacePath);
-      if (!destination) {
-        if (teleporter.isOtherworldFile(document.fileName)) {
-          vscode.window.showInformationMessage('jump destination is not found.');
-          return;
-        }
-        await suggestToCreateTest(document, workspacePath, teleporter);
-        return;
-      }
-      openFile(destination);
-    } catch (e) {
-      if (e instanceof FileIsNotJavaScriptError) {
-        vscode.window.showInformationMessage('the file is not javascript/typescript.');
-      } else {
-        vscode.window.showInformationMessage('some error is occurred.');
-      }
-    }
+    await jump(teleporter);
   });
 
-  context.subscriptions.push(disposable);
+  const disposableStoryTeleporter = vscode.commands.registerCommand('js-teleporter.jump-story', async () => {
+    const teleporter = new JsTeleporter({
+      extensions: getExtensions(),
+      srcRoot: getRoot(),
+      otherworldName: 'story',
+      otherworldFileSuffix: getStoryFileSuffix(),
+      otherworldFilesRoots: getStoryRoots(),
+    });
+    await jump(teleporter);
+  });
+
+  context.subscriptions.push(disposableTestTeleporter);
+  context.subscriptions.push(disposableStoryTeleporter);
 }
 
 export function deactivate() {}

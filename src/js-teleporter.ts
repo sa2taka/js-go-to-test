@@ -2,7 +2,7 @@ import { existsSync, readdirSync, statSync } from 'fs';
 import { FileIsNotJavaScriptError, FileIsOtherworldFileError, OtherworldDirectoryIsNotFound } from './error';
 import path = require('path');
 
-type OtherworldName = 'test';
+type OtherworldName = 'test' | 'story';
 
 export type TeleporterSetting = {
   extensions: string[];
@@ -15,16 +15,16 @@ export type TeleporterSetting = {
 export class JsTeleporter {
   constructor(private readonly setting: TeleporterSetting) {}
 
+  get otherworldName() {
+    return this.setting.otherworldName;
+  }
+
   private get root() {
     return this.setting.srcRoot;
   }
 
   private get extensions() {
     return this.setting.extensions;
-  }
-
-  private get otherworldName() {
-    return this.setting.otherworldName;
   }
 
   private get otherworldFileSuffix() {

@@ -11,7 +11,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:js-teleporter.jump"
+    "onCommand:js-teleporter.jump-test",
+    "onCommand:js-teleporter.jump-story"
   ],
   "main": "./out/extension.js",
   "repository": {
@@ -21,21 +22,36 @@
   "contributes": {
     "commands": [
       {
-        "command": "je-teleporter.jump",
+        "command": "js-teleporter.jump-test",
         "title": "Jump between test and code"
+      },
+      {
+        "command": "js-teleporter.jump-story",
+        "title": "Jump between story and jsx"
       }
     ],
     "keybindings": [
       {
-        "command": "je-teleporter.jump",
+        "command": "js-teleporter.jump-test",
         "key": "ctrl+alt+t",
         "mac": "ctrl+alt+t",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "js-teleporter.jump-story",
+        "key": "ctrl+alt+s",
+        "mac": "ctrl+alt+s",
         "when": "editorTextFocus"
       }
     ],
     "configuration": {
       "title": "JS Teleporter",
       "properties": {
+        "jsTeleporter.sourceRoot": {
+          "type": "string",
+          "default": "src",
+          "description": "Root of code to start exploring."
+        },
         "jsTeleporter.testSourceRoots": {
           "type": "array",
           "default": [
@@ -50,15 +66,22 @@
           ],
           "description": "Roots of test to start exploring."
         },
-        "jsTeleporter.sourceRoot": {
-          "type": "string",
-          "default": "src",
-          "description": "Root of code to start exploring."
-        },
         "jsTeleporter.testFileSuffix": {
           "type": "string",
           "default": ".test",
           "description": "Suffix to determine if the file is a test."
+        },
+        "jsTeleporter.storybookSourceRoots": {
+          "type": "array",
+          "default": [
+            "stories"
+          ],
+          "description": "Roots of test to start exploring."
+        },
+        "jsTeleporter.storybookFileSuffix": {
+          "type": "string",
+          "default": ".stories",
+          "description": "Suffix to determine if the file is a story book"
         }
       }
     }
