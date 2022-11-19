@@ -18,10 +18,10 @@ export class FileIsNotJavaScriptError extends CustomErrorBase {
   }
 }
 
-export class TestDirectoryIsNotFound extends CustomErrorBase {}
+export class OtherworldDirectoryIsNotFound extends CustomErrorBase {}
 
-export class FileIsTestError extends CustomErrorBase {
-  constructor(file: string) {
-    super(`The file is test. file: ${file}`);
+export class FileIsOtherworldFileError extends CustomErrorBase {
+  constructor(file: string, otherworldName: string) {
+    super(`The file is ${otherworldName}. file: ${file}`);
   }
 }

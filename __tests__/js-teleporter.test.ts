@@ -2,10 +2,8 @@ jest.mock('../src/config');
 
 import * as fsMock from 'mock-fs';
 import * as path from 'path';
-import { pathToFileURL } from 'url';
-import { getExtensions, getIgnorePaths, getRoot, getTestFileSuffix, getTestsRoots } from '../src/config';
-import { FileIsNotJavaScriptError, FileIsTestError } from '../src/error';
-import { jumpTo, suggestingTestPaths } from '../src/explorer';
+import { FileIsNotJavaScriptError, FileIsOtherworldFileError } from '../src/error';
+import { JsTeleporter } from '../src/js-teleporter';
 import { mockFiles, trimCwd } from './helpers/mockFiles';
 
 const extensions = ['js', 'ts', 'jsx', 'tsx'];
@@ -13,13 +11,15 @@ const srcRoot = 'src';
 const testFolder = '__tests__';
 const testSuffix = '.test';
 
-(getRoot as unknown as jest.Mock).mockReturnValue(srcRoot);
-(getTestFileSuffix as unknown as jest.Mock).mockReturnValue(testSuffix);
-(getTestsRoots as unknown as jest.Mock).mockReturnValue([testFolder]);
-(getExtensions as unknown as jest.Mock).mockReturnValue(extensions);
-(getIgnorePaths as unknown as jest.Mock).mockReturnValue(['node_modules']);
+describe('test teleporter', () => {
+  const testTeleporter = new JsTeleporter({
+    extensions,
+    srcRoot,
+    otherworldName: 'test',
+    otherworldFileSuffix: testSuffix,
+    otherworldFilesRoots: [testFolder],
+  });
 
-describe('test explorer', () => {
   const absolutePath = (relativePath: string): string => {
     return path.join(process.cwd(), relativePath);
   };
@@ -35,7 +35,7 @@ describe('test explorer', () => {
     return path.join(...paths);
   };
 
-  describe('jumpTo', () => {
+  describe('#jumpTo', () => {
     describe.each([
       {
         code: buildPath(rootFolderName, srcRoot, 'foo', 'bar', 'index.ts'),
@@ -74,12 +74,12 @@ describe('test explorer', () => {
         mockFiles(code, test);
       });
       it(`from ${trimCwd(code)} to ${trimCwd(test)}`, () => {
-        const actual = jumpTo(absolutePath(code), workspacePath);
+        const actual = testTeleporter.jumpTo(absolutePath(code), workspacePath);
         expect(actual).toBe(absolutePath(test));
       });
 
       it(`from ${test} to ${code}`, () => {
-        const actual = jumpTo(absolutePath(test), workspacePath);
+        const actual = testTeleporter.jumpTo(absolutePath(test), workspacePath);
         expect(actual).toBe(absolutePath(code));
       });
     });
@@ -98,12 +98,12 @@ describe('test explorer', () => {
         mockFiles(code, test);
       });
       it(`from ${code} to ${test}`, () => {
-        const actual = jumpTo(absolutePath(code), workspacePath);
+        const actual = testTeleporter.jumpTo(absolutePath(code), workspacePath);
         expect(actual).toBeUndefined();
       });
 
       it(`from ${test} to ${code}`, () => {
-        const actual = jumpTo(absolutePath(test), workspacePath);
+        const actual = testTeleporter.jumpTo(absolutePath(test), workspacePath);
         expect(actual).toBeUndefined();
       });
     });
@@ -111,11 +111,11 @@ describe('test explorer', () => {
     it('should throw error if file is not js', () => {
       const path = buildPath(rootFolderName, srcRoot, 'foo', 'bar', 'index.html');
       const absolute = absolutePath(path);
-      expect(() => jumpTo(absolute, workspacePath)).toThrowError(new FileIsNotJavaScriptError(absolute));
+      expect(() => testTeleporter.jumpTo(absolute, workspacePath)).toThrowError(new FileIsNotJavaScriptError(absolute));
     });
   });
 
-  describe('suggestingTestPaths', () => {
+  describe('#suggestingOtherworldPaths', () => {
     it.each([
       {
         code: buildPath(rootFolderName, srcRoot, 'foo', 'bar', 'index.ts'),
@@ -142,7 +142,7 @@ describe('test explorer', () => {
       ({ code, existsFolder, relativeSuggestion }) => {
         mockFiles(code, { file: existsFolder, option: { folder: true } });
 
-        const actual = suggestingTestPaths(absolutePath(code), workspacePath);
+        const actual = testTeleporter.suggestingOtherworldPaths(absolutePath(code), workspacePath);
         expect(actual).toEqual([
           {
             absolutePath: absolutePath(relativeSuggestion),
@@ -155,13 +155,15 @@ describe('test explorer', () => {
     it('should throw error if file is not js', () => {
       const path = buildPath(rootFolderName, srcRoot, 'foo', 'bar', 'index.html');
       const absolute = absolutePath(path);
-      expect(() => suggestingTestPaths(absolute, workspacePath)).toThrowError(new FileIsNotJavaScriptError(absolute));
+      expect(() => testTeleporter.suggestingOtherworldPaths(absolute, workspacePath)).toThrowError(new FileIsNotJavaScriptError(absolute));
     });
 
     it('should throw error if file is test', () => {
-      const path = buildPath(rootFolderName, srcRoot, 'foo', 'bar', 'index.test.ts');
+      const path = buildPath(rootFolderName, srcRoot, 'foo', 'bar', `index${testSuffix}.ts`);
       const absolute = absolutePath(path);
-      expect(() => suggestingTestPaths(absolute, workspacePath)).toThrowError(new FileIsTestError(absolute));
+      expect(() => testTeleporter.suggestingOtherworldPaths(absolute, workspacePath)).toThrowError(
+        new FileIsOtherworldFileError(absolute, 'test')
+      );
     });
   });
 });
