@@ -3,40 +3,59 @@
 JS Teleporter is VSCode extension to teleport between code like following in JavaScript/TypeScript project.
 
 - .js(x) or .ts(x) file <-> test file 
+- .jsx or tsx file <-> storybook
 
-![usage](https://user-images.githubusercontent.com/13149507/202841455-0bd2c78c-9b26-4b3f-bbfd-31afb172c92f.gif)
+## Demo
+
+### Test - Demo
+
+![usage test](https://user-images.githubusercontent.com/13149507/202853530-e3e85cda-8a26-47d2-9d69-82ecc33e9c03.gif)
+
+### Storybook - Demo
+
+![usage storybook](https://user-images.githubusercontent.com/13149507/202853523-a58ac81d-6981-47cd-afbe-821cdf19ba29.gif)
+
 
 ## Installation
 
-Install [JS go to test - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=sa2taka.js-go-to-test).
+Install [JS Teleporter - Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=sa2taka.js-teleporter).
 
 ## Usage 
 
+### Test
+
 In the .js(x) or .ts(x) file, push `Ctrl + Alt + T`.
-Teleport to the test file according to the following rules.
+Teleport to the test file according to the following rules. 
 
 - Explorer the test file in the same folder.
   - e.g. `src/foo/bar.ts` teleports to `src/foo/bar.test.ts`.
-  - ![same folder test](https://user-images.githubusercontent.com/13149507/202842184-9623e7d7-627f-4c59-9883-ecf8598c7cd7.gif)
+  - ![test in same folder](https://user-images.githubusercontent.com/13149507/202853996-df8732c9-6ede-4bce-8270-06ab4a2323bb.gif)
 - Explorer the test (or same name) file in the test folder.
   - The folders have the same directory structure from the root of source.
   - e.g. `src/foo/bar.ts` teleports to `__test__/foo/bar.test.ts`, `src/__tests__/foo/bar.test.ts` or `src/foo/__tests__/bar.test.ts`. If there is more than one, it will be created in the closest folder.
-
-  - ![example sample file](https://user-images.githubusercontent.com/13149507/202842124-9bbb9c31-8ab6-4dc0-a7f1-7504a948ea5b.gif)
-
-If a test file was opened, do the reverse.
+  - ![test in test folder](https://user-images.githubusercontent.com/13149507/202854002-28033fe3-3a94-42b6-a731-5aa98f3d0e05.gif)
+- If a test file was opened, do the reverse.
 
 If the test file does not exist, a new test file can be created.
 
-![behavior of the no existing the test file](https://user-images.githubusercontent.com/13149507/202842760-2a5e3afd-b333-4b80-9dd1-b344a42bf97d.gif)
+![test not found](https://user-images.githubusercontent.com/13149507/202854008-f155952c-b6c0-4b4c-a23a-2bfb2c5a973b.gif)
 
 
-Currently, you can create a test file only if you have a test folder such as `__tests__`. Also, the suffix of the test file is always added to the end of the file name (default: `.test`).
+Currently, the suffix of the test file is always added to the end of the file name (default: `.test`).
+
+### Storybook
+
+In the .jsx or tsx file, push `Ctrl + Alt + S`.
+The rules of teleport are exactly the same as in the [test](#test), differing only in filename suffixes and directories to be searched.
 
 ## Config
 
-| name            | type            | descriptions                                                                        | default                                                                                |
-| --------------- | --------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| testSourceRoots | array of string | Root directories of tests. Files under configured directories are considered tests. | `["__tests__", "__specs__", "__test__", "__spec__", "tests", "specs", "test", "spec"]` |
-| sourceRoot      | string          | Root directory of source.                                                           | `"src"`                                                                                |
-| testFileSuffix  | string          | Suffix to determine if the file is a test.                                          | `".test"`                                                                              |
+| name                 | type            | descriptions                                                                               | default                                                                                |
+| -------------------- | --------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| sourceRoot           | string          | Root directory of source.                                                                  | `"src"`                                                                                |
+| testSourceRoots      | array of string | Root directories of tests. Files under configured directories are considered tests.        | `["__tests__", "__specs__", "__test__", "__spec__", "tests", "specs", "test", "spec"]` |
+| testFileSuffix       | string          | Suffix to determine if the file is a test.                                                 | `".test"`                                                                              |
+| testSourceRoots      | array of string | Root directories of tests. Files under configured directories are considered tests.        | `["__tests__", "__specs__", "__test__", "__spec__", "tests", "specs", "test", "spec"]` |
+| testFileSuffix       | string          | Suffix to determine if the file is a test.                                                 | `".test"`                                                                              |
+| storybookSourceRoots | array of string | Root directories of storybook. Files under configured directories are considered storybook | `["stories"]`                                                                          |
+| storybookFileSuffix  | string          | Suffix to determine if the file is a story book                                            | `.stories`                                                                             |
