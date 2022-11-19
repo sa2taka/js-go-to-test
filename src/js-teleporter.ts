@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, statSync } from 'fs';
 import { FileIsNotJavaScriptError, FileIsOtherworldFileError, OtherworldDirectoryIsNotFound } from './error';
 import path = require('path');
+import { workspace } from 'vscode';
 
 type OtherworldName = 'test' | 'story';
 
@@ -55,9 +56,11 @@ export class JsTeleporter {
     if (this.isOtherworldFile(originalFilePath)) {
       throw new FileIsOtherworldFileError(originalFilePath, this.otherworldName);
     } else {
-      const intOtherworldPath = this.getSuggestionOtherworldFilepathInOtherworld(originalFilePath, workSpacePath);
+      const suggestionFile =
+        this.getSuggestionOtherworldFilepathInOtherworld(originalFilePath, workSpacePath) ??
+        this.getSuggestionOtherworldFilepathInSameDirectory(originalFilePath, workSpacePath);
 
-      return [intOtherworldPath]
+      return [suggestionFile]
         .filter((v): v is string => Boolean(v))
         .map((absolutePath) => {
           const relativePath = this.shavePathFromStart(absolutePath, workSpacePath);
@@ -177,6 +180,13 @@ export class JsTeleporter {
     } catch (e) {
       return null;
     }
+  }
+
+  private getSuggestionOtherworldFilepathInSameDirectory(originalFilePath: string, workSpacePath: string): string | null {
+    const parsed = path.parse(originalFilePath);
+    const otherworldFilename = `${parsed.name}${this.otherworldFileSuffix}${parsed.ext}`;
+
+    return path.join(parsed.dir, otherworldFilename);
   }
 
   private isInOtherworld(filepath: string): boolean {

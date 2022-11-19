@@ -152,6 +152,19 @@ describe('test teleporter', () => {
       }
     );
 
+    it('should suggest test file path in same directory if test directory is not found', () => {
+      const code = buildPath(rootFolderName, srcRoot, 'foo', 'bar', 'index.ts');
+      const expectedSuggestionFilePath = buildPath(rootFolderName, srcRoot, 'foo', 'bar', `index${testSuffix}.ts`);
+
+      const actual = testTeleporter.suggestingOtherworldPaths(absolutePath(code), workspacePath);
+      expect(actual).toEqual([
+        {
+          absolutePath: absolutePath(expectedSuggestionFilePath),
+          relativePath: expectedSuggestionFilePath.replace(new RegExp(`^${rootFolderName}${path.sep}`), ''),
+        },
+      ]);
+    });
+
     it('should throw error if file is not js', () => {
       const path = buildPath(rootFolderName, srcRoot, 'foo', 'bar', 'index.html');
       const absolute = absolutePath(path);
