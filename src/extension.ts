@@ -6,9 +6,7 @@ import * as mkdirp from 'mkdirp';
 import * as fs from 'fs';
 
 const openFile = (fileName: string) => {
-  vscode.workspace
-    .openTextDocument(fileName)
-    .then(vscode.window.showTextDocument);
+  vscode.workspace.openTextDocument(fileName).then(vscode.window.showTextDocument);
 };
 
 const createFile = (file: string) => {
@@ -24,10 +22,7 @@ type PickItem = {
   absolutePath: string;
 };
 
-const suggestToCreateTest = async (
-  document: vscode.TextDocument,
-  workspacePath: string
-) => {
+const suggestToCreateTest = async (document: vscode.TextDocument, workspacePath: string) => {
   const suggestionPaths = suggestingTestPaths(document.fileName, workspacePath);
 
   if (suggestionPaths.length <= 0) {
@@ -60,45 +55,35 @@ const escapeRegExp = (str: string): string => {
 };
 
 export function activate(context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand(
-    'js-go-to-test.jump',
-    async () => {
-      var editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        return;
-      }
+  const disposable = vscode.commands.registerCommand('js-teleporter.jump', async () => {
+    var editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      return;
+    }
 
-      const document = editor.document;
-      const relativePath = vscode.workspace.asRelativePath(document.fileName);
-      const workspacePath = document.fileName.replace(
-        new RegExp(`${escapeRegExp(relativePath)}$`),
-        ''
-      );
+    const document = editor.document;
+    const relativePath = vscode.workspace.asRelativePath(document.fileName);
+    const workspacePath = document.fileName.replace(new RegExp(`${escapeRegExp(relativePath)}$`), '');
 
-      try {
-        const destination = jumpTo(document.fileName, workspacePath);
-        if (!destination) {
-          if (isTest(document.fileName)) {
-            vscode.window.showInformationMessage(
-              'jump destination is not found.'
-            );
-            return;
-          }
-          await suggestToCreateTest(document, workspacePath);
+    try {
+      const destination = jumpTo(document.fileName, workspacePath);
+      if (!destination) {
+        if (isTest(document.fileName)) {
+          vscode.window.showInformationMessage('jump destination is not found.');
           return;
         }
-        openFile(destination);
-      } catch (e) {
-        if (e instanceof FileIsNotJavaScriptError) {
-          vscode.window.showInformationMessage(
-            'the file is not javascript/typescript.'
-          );
-        } else {
-          vscode.window.showInformationMessage('some error is occurred.');
-        }
+        await suggestToCreateTest(document, workspacePath);
+        return;
+      }
+      openFile(destination);
+    } catch (e) {
+      if (e instanceof FileIsNotJavaScriptError) {
+        vscode.window.showInformationMessage('the file is not javascript/typescript.');
+      } else {
+        vscode.window.showInformationMessage('some error is occurred.');
       }
     }
-  );
+  });
 
   context.subscriptions.push(disposable);
 }

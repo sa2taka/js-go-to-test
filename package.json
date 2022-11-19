@@ -1,7 +1,7 @@
 {
-  "name": "js-go-to-test",
+  "name": "js-teleporter",
   "publisher": "sa2taka",
-  "displayName": "JS go to test",
+  "displayName": "JS Teleporter",
   "description": "Jump between code and test in JavaScript/TypeScript project.",
   "version": "0.2.3",
   "engines": {
@@ -11,32 +11,32 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:js-go-to-test.jump"
+    "onCommand:js-teleporter.jump"
   ],
   "main": "./out/extension.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sa2taka/js-go-to-test"
+    "url": "https://github.com/sa2taka/js-teleporter"
   },
   "contributes": {
     "commands": [
       {
-        "command": "js-go-to-test.jump",
+        "command": "je-teleporter.jump",
         "title": "Jump between test and code"
       }
     ],
     "keybindings": [
       {
-        "command": "js-go-to-test.jump",
+        "command": "je-teleporter.jump",
         "key": "ctrl+alt+t",
         "mac": "ctrl+alt+t",
         "when": "editorTextFocus"
       }
     ],
     "configuration": {
-      "title": "JS Go To Test",
+      "title": "JS Teleporter",
       "properties": {
-        "jsGoToTest.testSourceRoots": {
+        "jsTeleporter.testSourceRoots": {
           "type": "array",
           "default": [
             "__tests__",
@@ -50,12 +50,12 @@
           ],
           "description": "Roots of test to start exploring."
         },
-        "jsGoToTest.sourceRoot": {
+        "jsTeleporter.sourceRoot": {
           "type": "string",
           "default": "src",
           "description": "Root of code to start exploring."
         },
-        "jsGoToTest.testFileSuffix": {
+        "jsTeleporter.testFileSuffix": {
           "type": "string",
           "default": ".test",
           "description": "Suffix to determine if the file is a test."

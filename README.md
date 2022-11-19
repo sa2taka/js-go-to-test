@@ -1,6 +1,8 @@
-# JS Go To Test
+# JS Teleporter
 
-Jump between code and test in JavaScript/TypeScript project.
+JS Teleporter is VSCode extension to teleport between code like following in JavaScript/TypeScript project.
+
+- .js(x) or .ts(x) file <-> test file 
 
 ![usage](https://user-images.githubusercontent.com/13149507/202841455-0bd2c78c-9b26-4b3f-bbfd-31afb172c92f.gif)
 

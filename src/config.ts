@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 
 export const getTestsRoots = (): string[] => {
-  return vscode.workspace.getConfiguration('jsGoToTest').get('testSourceRoots')!;
+  return vscode.workspace.getConfiguration('jsTeleporter').get('testSourceRoots')!;
 };
 
 export const getRoot = (): string => {
-  return vscode.workspace.getConfiguration('jsGoToTest').get('sourceRoot')!;
+  return vscode.workspace.getConfiguration('jsTeleporter').get('sourceRoot')!;
 };
 
 export const getTestFileSuffix = (): string => {
-  return vscode.workspace.getConfiguration('jsGoToTest').get('testFileSuffix')!;
+  return vscode.workspace.getConfiguration('jsTeleporter').get('testFileSuffix')!;
 };
 
 export const getExtensions = (): string[] => {
