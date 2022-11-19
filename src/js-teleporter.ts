@@ -35,7 +35,7 @@ export class JsTeleporter {
     return this.setting.otherworldFilesRoots;
   }
 
-  jumpTo(filepath: string, workSpacePath: string): string | undefined {
+  teleportTo(filepath: string, workSpacePath: string): string | undefined {
     if (!this.isJsFile(filepath)) {
       throw new FileIsNotJavaScriptError(filepath);
     }

@@ -2,7 +2,7 @@
   "name": "js-teleporter",
   "publisher": "sa2taka",
   "displayName": "JS Teleporter",
-  "description": "Jump between code and test in JavaScript/TypeScript project.",
+  "description": "Teleport between code and test/jsx and story in JavaScript/TypeScript project.",
   "version": "0.2.3",
   "engines": {
     "vscode": "^1.63.0"
@@ -11,8 +11,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:js-teleporter.jump-test",
-    "onCommand:js-teleporter.jump-story"
+    "onCommand:js-teleporter.teleport-test",
+    "onCommand:js-teleporter.teleport-story"
   ],
   "main": "./out/extension.js",
   "repository": {
@@ -22,23 +22,23 @@
   "contributes": {
     "commands": [
       {
-        "command": "js-teleporter.jump-test",
-        "title": "Jump between test and code"
+        "command": "js-teleporter.teleport-test",
+        "title": "teleport between test and code"
       },
       {
-        "command": "js-teleporter.jump-story",
-        "title": "Jump between story and jsx"
+        "command": "js-teleporter.teleport-story",
+        "title": "teleport between story and jsx"
       }
     ],
     "keybindings": [
       {
-        "command": "js-teleporter.jump-test",
+        "command": "js-teleporter.teleport-test",
         "key": "ctrl+alt+t",
         "mac": "ctrl+alt+t",
         "when": "editorTextFocus"
       },
       {
-        "command": "js-teleporter.jump-story",
+        "command": "js-teleporter.teleport-story",
         "key": "ctrl+alt+s",
         "mac": "ctrl+alt+s",
         "when": "editorTextFocus"

@@ -35,7 +35,7 @@ describe('test teleporter', () => {
     return path.join(...paths);
   };
 
-  describe('#jumpTo', () => {
+  describe('#teleportTo', () => {
     describe.each([
       {
         code: buildPath(rootFolderName, srcRoot, 'foo', 'bar', 'index.ts'),
@@ -74,12 +74,12 @@ describe('test teleporter', () => {
         mockFiles(code, test);
       });
       it(`from ${trimCwd(code)} to ${trimCwd(test)}`, () => {
-        const actual = testTeleporter.jumpTo(absolutePath(code), workspacePath);
+        const actual = testTeleporter.teleportTo(absolutePath(code), workspacePath);
         expect(actual).toBe(absolutePath(test));
       });
 
       it(`from ${test} to ${code}`, () => {
-        const actual = testTeleporter.jumpTo(absolutePath(test), workspacePath);
+        const actual = testTeleporter.teleportTo(absolutePath(test), workspacePath);
         expect(actual).toBe(absolutePath(code));
       });
     });
@@ -98,12 +98,12 @@ describe('test teleporter', () => {
         mockFiles(code, test);
       });
       it(`from ${code} to ${test}`, () => {
-        const actual = testTeleporter.jumpTo(absolutePath(code), workspacePath);
+        const actual = testTeleporter.teleportTo(absolutePath(code), workspacePath);
         expect(actual).toBeUndefined();
       });
 
       it(`from ${test} to ${code}`, () => {
-        const actual = testTeleporter.jumpTo(absolutePath(test), workspacePath);
+        const actual = testTeleporter.teleportTo(absolutePath(test), workspacePath);
         expect(actual).toBeUndefined();
       });
     });
@@ -111,7 +111,7 @@ describe('test teleporter', () => {
     it('should throw error if file is not js', () => {
       const path = buildPath(rootFolderName, srcRoot, 'foo', 'bar', 'index.html');
       const absolute = absolutePath(path);
-      expect(() => testTeleporter.jumpTo(absolute, workspacePath)).toThrowError(new FileIsNotJavaScriptError(absolute));
+      expect(() => testTeleporter.teleportTo(absolute, workspacePath)).toThrowError(new FileIsNotJavaScriptError(absolute));
     });
   });
 

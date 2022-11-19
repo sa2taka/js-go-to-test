@@ -28,7 +28,7 @@ const suggestToCreateTest = async (document: vscode.TextDocument, workspacePath:
   const suggestionPaths = teleporter.suggestingOtherworldPaths(document.fileName, workspacePath);
 
   if (suggestionPaths.length <= 0) {
-    vscode.window.showInformationMessage('jump destination is not found.');
+    vscode.window.showInformationMessage('teleport destination is not found.');
     return;
   }
 
@@ -56,7 +56,7 @@ const escapeRegExp = (str: string): string => {
   return str.replace(reRegExp, '\\$&');
 };
 
-const jump = async (teleporter: JsTeleporter) => {
+const teleport = async (teleporter: JsTeleporter) => {
   var editor = vscode.window.activeTextEditor;
   if (!editor) {
     return;
@@ -67,10 +67,10 @@ const jump = async (teleporter: JsTeleporter) => {
   const workspacePath = document.fileName.replace(new RegExp(`${escapeRegExp(relativePath)}$`), '');
 
   try {
-    const destination = teleporter.jumpTo(document.fileName, workspacePath);
+    const destination = teleporter.teleportTo(document.fileName, workspacePath);
     if (!destination) {
       if (teleporter.isOtherworldFile(document.fileName)) {
-        vscode.window.showInformationMessage('jump destination is not found.');
+        vscode.window.showInformationMessage('teleport destination is not found.');
         return;
       }
       await suggestToCreateTest(document, workspacePath, teleporter);
@@ -87,7 +87,7 @@ const jump = async (teleporter: JsTeleporter) => {
 };
 
 export function activate(context: vscode.ExtensionContext) {
-  const disposableTestTeleporter = vscode.commands.registerCommand('js-teleporter.jump-test', async () => {
+  const disposableTestTeleporter = vscode.commands.registerCommand('js-teleporter.teleport-test', async () => {
     const teleporter = new JsTeleporter({
       extensions: getExtensions(),
       srcRoot: getRoot(),
@@ -95,10 +95,10 @@ export function activate(context: vscode.ExtensionContext) {
       otherworldFileSuffix: getTestFileSuffix(),
       otherworldFilesRoots: getTestsRoots(),
     });
-    await jump(teleporter);
+    await teleport(teleporter);
   });
 
-  const disposableStoryTeleporter = vscode.commands.registerCommand('js-teleporter.jump-story', async () => {
+  const disposableStoryTeleporter = vscode.commands.registerCommand('js-teleporter.teleport-story', async () => {
     const teleporter = new JsTeleporter({
       extensions: getExtensions(),
       srcRoot: getRoot(),
@@ -106,7 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
       otherworldFileSuffix: getStoryFileSuffix(),
       otherworldFilesRoots: getStoryRoots(),
     });
-    await jump(teleporter);
+    await teleport(teleporter);
   });
 
   context.subscriptions.push(disposableTestTeleporter);
