@@ -4,7 +4,15 @@ import { FileIsNotJavaScriptError } from './error';
 import * as mkdirp from 'mkdirp';
 import * as fs from 'fs';
 import { JsTeleporter } from './js-teleporter';
-import { getExtensions, getRoot, getStoryFileSuffix, getStoryRoots, getTestFileSuffix, getTestsRoots } from './config';
+import {
+  getExtensionsForStory,
+  getExtensionsForTest,
+  getRoot,
+  getStoryFileSuffix,
+  getStoryRoots,
+  getTestFileSuffix,
+  getTestsRoots,
+} from './config';
 
 const openFile = (fileName: string) => {
   vscode.workspace.openTextDocument(fileName).then(vscode.window.showTextDocument);
@@ -89,7 +97,7 @@ const teleport = async (teleporter: JsTeleporter) => {
 export function activate(context: vscode.ExtensionContext) {
   const disposableTestTeleporter = vscode.commands.registerCommand('js-teleporter.teleport-test', async () => {
     const teleporter = new JsTeleporter({
-      extensions: getExtensions(),
+      extensions: getExtensionsForTest(),
       srcRoot: getRoot(),
       otherworldName: 'test',
       otherworldFileSuffix: getTestFileSuffix(),
@@ -100,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const disposableStoryTeleporter = vscode.commands.registerCommand('js-teleporter.teleport-story', async () => {
     const teleporter = new JsTeleporter({
-      extensions: getExtensions(),
+      extensions: getExtensionsForStory(),
       srcRoot: getRoot(),
       otherworldName: 'story',
       otherworldFileSuffix: getStoryFileSuffix(),

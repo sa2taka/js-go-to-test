@@ -20,8 +20,12 @@ export const getStoryFileSuffix = (): string => {
   return vscode.workspace.getConfiguration('jsTeleporter').get('storybookFileSuffix')!;
 };
 
-export const getExtensions = (): string[] => {
+export const getExtensionsForTest = (): string[] => {
   return ['ts', 'js', 'tsx', 'jsx', 'mts', 'mjs', 'cts', 'cjs'];
+};
+
+export const getExtensionsForStory = (): string[] => {
+  return ['tsx', 'jsx'];
 };
 
 export const getIgnorePaths = (): string[] => {
